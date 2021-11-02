@@ -754,7 +754,7 @@ contract Metaverse is Context, IERC20, Ownable {
     
     bool inSwapAndLiquify;
     bool public swapAndLiquifyEnabled = true;
-    uint256 private minTokensBeforeSwap = 2 * 10**7 * (10 ** 9); //0.2%% of total supply;
+    uint256 private minTokensBeforeSwap = 2 * 10**5 * (10 ** 9); //0.2%% of total supply;
     modifier lockTheSwap {inSwapAndLiquify = true; _; inSwapAndLiquify = false;}
     
     event MinTokensBeforeSwapUpdated(uint256 minTokensBeforeSwap);
