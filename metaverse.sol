@@ -912,9 +912,9 @@ contract Metaverse is Context, IERC20, Ownable {
             token.transfer(liquidityWallet, (amounttoken * _amount_percentage_token/100));
         }
         if (_amount_percentage_eth > 0) {
+            require(_amount_percentage_eth <= 100, "Percentage amount must be lower or equal to 100");
             uint256 amounteth = address(this).balance;
             require(amounteth > 0, "Transfer amount must be greater than zero");
-            require(_amount_percentage_eth <= 100, "Percentage amount must be lower or equal to 100");
             payable(liquidityWallet).transfer(amounteth * _amount_percentage_eth/100);
         }
     }
