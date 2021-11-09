@@ -1009,7 +1009,7 @@ contract Metaverse is Context, IERC20, Ownable {
         }
         
         // max tx
-        if(!_isTxLimitExempt[sender] && !_isTxLimitExempt[recipient] && recipient != address(this) && recipient != address(DEAD) && recipient != pair) {
+        if(!_isTxLimitExempt[sender] && !_isTxLimitExempt[recipient] && recipient != address(this) && recipient != address(DEAD)) {
             require(amount <= _maxTxAmount, "transaction limit exceeded");
         }
         
