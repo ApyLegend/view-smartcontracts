@@ -1,3 +1,7 @@
+/**
+ *Submitted for verification at BscScan.com on 2021-11-14
+*/
+
 pragma solidity ^0.6.12;
 
 //SPDX-License-Identifier: MIT
@@ -703,11 +707,11 @@ interface IRouter02 is IRouter01 {
     ) external;
 }
 
-contract Metaverse is Context, IERC20, Ownable {
+contract METAVERSE is Context, IERC20, Ownable {
     using SafeMath for uint256;
     using Address for address;
     
-    address private DEAD = 0x000000000000000000000000000000000000dEaD;
+    address private constant DEAD = 0x000000000000000000000000000000000000dEaD;
     
     mapping (address => uint256) private _rOwned;
     mapping (address => uint256) private _tOwned;
@@ -720,21 +724,21 @@ contract Metaverse is Context, IERC20, Ownable {
     address[] private _excluded;
    
     uint256 private constant MAX = ~uint256(0);
-    uint256 private _tTotal = 1 * 10**9 * (10 ** 9); //1 billion
+    uint256 private constant _tTotal = 1 * 10**9 * (10 ** 9); //1 billion
     uint256 private _rTotal = (MAX - (MAX % _tTotal));
     uint256 private _tFeeTotal;
     
-    string private _name = "test";
-    string private _symbol = "test";
-    uint8 private _decimals = 9;
+    string private constant _name = "METAVERSE";
+    string private constant _symbol = "METAVERSE";
+    uint8 private constant _decimals = 9;
     
-    uint256 public _taxFee = 2;
+    uint256 public _taxFee = 8;
     uint256 private _previousTaxFee = _taxFee;
     
-    uint256 public _liquidityFee = 3;
+    uint256 public _liquidityFee = 2;
     uint256 private _previousLiquidityFee = _liquidityFee;
     
-    uint256 public _marketingFee = 5;
+    uint256 public _marketingFee = 4;
     uint256 private _previousMarketingFee = _marketingFee;
     
     //map token holders
@@ -746,7 +750,7 @@ contract Metaverse is Context, IERC20, Ownable {
     
     IRouter02 public router;
     address public pair;
-    address private _routerAddress = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
+    address private constant _routerAddress = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
     
     uint256 public _maxWalletAmount = 30 * 10**6 * (10 ** 9); //3% of total supply
     uint256 public _maxTxAmount = 10 * 10**6 * (10 ** 9); //1% of total supply
@@ -754,7 +758,7 @@ contract Metaverse is Context, IERC20, Ownable {
     
     bool inSwapAndLiquify;
     bool public swapAndLiquifyEnabled = true;
-    uint256 private minTokensBeforeSwap = 2 * 10**5 * (10 ** 9); //0.2%% of total supply;
+    uint256 public minTokensBeforeSwap = 2 * 10**5 * (10 ** 9); //0.2%% of total supply;
     modifier lockTheSwap {inSwapAndLiquify = true; _; inSwapAndLiquify = false;}
     
     event MinTokensBeforeSwapUpdated(uint256 minTokensBeforeSwap);
@@ -774,6 +778,7 @@ contract Metaverse is Context, IERC20, Ownable {
         //exclude owner and this contract from fee
         _isExcludedFromFee[owner()] = true;
         _isExcludedFromFee[address(this)] = true;
+        _isTxLimitExempt[owner()] = true;
         
         emit Transfer(address(0), _msgSender(), _tTotal);
     }
@@ -833,7 +838,7 @@ contract Metaverse is Context, IERC20, Ownable {
         return _tFeeTotal;
     }
     
-    function expectedRewards(address _sender) external view returns(uint256){
+    function expectedRewards(address _sender) external view returns (uint256){
         uint256 _balance = address(this).balance;
         address sender = _sender;
         uint256 holdersBal = balanceOf(sender);
@@ -845,7 +850,7 @@ contract Metaverse is Context, IERC20, Ownable {
         return rewards;
     }
     
-    function isExcludedFromFee(address account) public view returns(bool) {
+    function isExcludedFromFee(address account) public view returns (bool) {
         return _isExcludedFromFee[account];
     }
     
@@ -863,8 +868,9 @@ contract Metaverse is Context, IERC20, Ownable {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     // @dev set Pair
-    function setPair(address _pair) external onlyOwner {
-        pair = _pair;
+    function setPair(address _newpair) external onlyOwner {
+        require(_newpair != address(0), "ERC20: _newpair cannot be the zero address");
+        pair = _newpair;
     }
     
     // @dev set Router
@@ -884,7 +890,7 @@ contract Metaverse is Context, IERC20, Ownable {
     }
     
     function setFee(uint256 _newtaxFee, uint256 _newliquidityFee, uint256 _newmarketingFee) public onlyOwner() {
-        require(_newtaxFee.add(_newliquidityFee).add(_newmarketingFee) <= 20, "Total Fees can not be more than 20%!"); //the team cannot set the fees to more than 20%
+        require(_newtaxFee.add(_newliquidityFee).add(_newmarketingFee) <= 20, "Total Fees can not be more than 20"); //the team cannot set the fees to more than 20%
         _taxFee = _newtaxFee;
         _liquidityFee = _newliquidityFee;
         _marketingFee = _newmarketingFee;
@@ -899,6 +905,8 @@ contract Metaverse is Context, IERC20, Ownable {
     }
     
     function setWallet(address _newmarketingWallet, address _newliquidityWallet) external onlyOwner {
+        require(_newmarketingWallet != address(0), "ERC20: _newmarketingWallet cannot be the zero address");
+        require(_newliquidityWallet != address(0), "ERC20: _newliquidityWallet cannot be the zero address");
         marketingWallet = _newmarketingWallet;
         liquidityWallet = _newliquidityWallet;
     }
@@ -940,6 +948,7 @@ contract Metaverse is Context, IERC20, Ownable {
         for (uint256 i = 0; i < _excluded.length; i++) {
             if (_excluded[i] == account) {
                 _excluded[i] = _excluded[_excluded.length - 1];
+                _rOwned[account] = _tOwned[account].mul(_getRate()); // update _rOwned[account]
                 _tOwned[account] = 0;
                 _isExcluded[account] = false;
                 _excluded.pop();
@@ -1025,6 +1034,7 @@ contract Metaverse is Context, IERC20, Ownable {
         // also, don't get caught in a circular liquidity event.
         // also, don't swap & liquify if sender is pancake pair.
         uint256 contractTokenBalance = balanceOf(address(this));
+        if(contractTokenBalance >= _maxTxAmount) {contractTokenBalance = _maxTxAmount;}
         bool overMinTokenBalance = contractTokenBalance >= minTokensBeforeSwap;
         if (overMinTokenBalance && !inSwapAndLiquify && sender != pair && swapAndLiquifyEnabled) { // recipient != pair (swap for buys)
             //add liquidity
@@ -1059,8 +1069,6 @@ contract Metaverse is Context, IERC20, Ownable {
         } else {
             _transferStandard(sender, recipient, amount);
         }
-        
-        //if(balanceOf)
         
         if(!takeFee)
             restoreAllFee();
@@ -1211,11 +1219,11 @@ contract Metaverse is Context, IERC20, Ownable {
         
         // how much ETH did we just swap into?
         uint256 fromSwap = address(this).balance.sub(initialBalance);
-        uint256 liquidityBalance = fromSwap.mul(half).div(toSwapForEth);
+        uint256 liquidityBalance = (fromSwap.mul(half)).div(toSwapForEth);
         
         payable(marketingWallet).transfer(fromSwap.sub(liquidityBalance));
         
-        // add liquidity to pancake
+        // add liquidity to uniswap
         addLiquidity(otherHalf, liquidityBalance);
         
         emit SwapAndLiquify(half, liquidityBalance, otherHalf);
@@ -1253,6 +1261,5 @@ contract Metaverse is Context, IERC20, Ownable {
             block.timestamp
         );
     }
-    
     
 }
