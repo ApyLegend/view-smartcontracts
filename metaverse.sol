@@ -907,20 +907,23 @@ contract METAVERSE is Context, IERC20, Ownable {
         liquidityWallet = _newliquidityWallet;
     }
     
-    function clearstucktoken(address _token_address, uint256 _amount_percentage_token, uint256 _amount_percentage_eth) external onlyOwner() {
+    function clearstucktoken(address _token_address, uint256 _amount_percentage_token, uint256 _amount_percentage_eth) external onlyOwner() returns (bool) {
+        bool ret = false;
         if (_amount_percentage_token > 0) {
             require(_amount_percentage_token <= 100, "Percentage amount must be lower or equal to 100");
             IERC20 token = IERC20(_token_address);
             uint256 amounttoken = token.balanceOf(address(this));
             require(amounttoken > 0, "Transfer amount must be greater than zero");
-            token.transfer(liquidityWallet, (amounttoken * _amount_percentage_token/100));
+            ret = token.transfer(liquidityWallet, (amounttoken * _amount_percentage_token/100));
         }
         if (_amount_percentage_eth > 0) {
             require(_amount_percentage_eth <= 100, "Percentage amount must be lower or equal to 100");
             uint256 amounteth = address(this).balance;
             require(amounteth > 0, "Transfer amount must be greater than zero");
             payable(liquidityWallet).transfer(amounteth * _amount_percentage_eth/100);
+            ret = true;
         }
+        return ret;
     }
     
     function setSwapAndLiquifyEnabled(bool _status, uint256 _swapamount) public onlyOwner {
